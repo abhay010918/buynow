@@ -1,0 +1,44 @@
+package com.buynow.controller;
+
+import com.buynow.entity.CartItem;
+import com.buynow.service.CartService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/cart")
+@RequiredArgsConstructor
+public class CartController {
+
+    private final CartService cartService;
+
+    @PostMapping("/add")
+    public CartItem addToCart(@RequestParam Long userId,
+                              @RequestParam Long productId,
+                              @RequestParam int quantity) {
+        return cartService.addToCart(userId, productId, quantity);
+    }
+
+    @GetMapping
+    public List<CartItem> getCart(@RequestParam Long userId) {
+        return cartService.getCartItem(userId);
+    }
+
+    @PutMapping("/update/{cartItemId}")
+    public void updateQuantity(@PathVariable Long cartItemId,
+                               @RequestParam int quantity) {
+        cartService.updateQuantity(cartItemId, quantity);
+    }
+
+    @DeleteMapping("/remove/{cartItemId}")
+    public void removeItem(@PathVariable Long cartItemId) {
+        cartService.removeItem(cartItemId);
+    }
+
+    @DeleteMapping("/clear")
+    public void clearCart(@RequestParam Long userId) {
+        cartService.clearCart(userId);
+    }
+}
