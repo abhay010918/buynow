@@ -1,6 +1,8 @@
 package com.buynow.config;
 
 
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.buynow.entity.User;
 import com.buynow.repository.UserRepository;
 import com.buynow.util.JwtUtil;
@@ -37,28 +39,43 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletRequest request,
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
-
-        // Check if the Authorization header is present and starts with "Bearer "
-        String authorization = request.getHeader("Authorization");
+        try {
 
 
-        if (authorization != null && authorization.startsWith("Bearer ")) {
-            String token = authorization.substring(7); // Remove the "Bearer " part
-            String username = jwtUtil.getUsername(token); // Get the username from the token
-            String role = jwtUtil.getRole(token);
-            Optional<User> byUsername = userRepository.findByEmail(username);
-            if(byUsername.isPresent()){
-                User user = byUsername.get();
-                UsernamePasswordAuthenticationToken authentication =
-                        new UsernamePasswordAuthenticationToken(user,null,
-                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-                authentication.setDetails(new WebAuthenticationDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Check if the Authorization header is present and starts with "Bearer "
+            String authorization = request.getHeader("Authorization");
+
+
+            if (authorization != null && authorization.startsWith("Bearer ")) {
+                String token = authorization.substring(7); // Remove the "Bearer " part
+                String username = jwtUtil.getUsername(token); // Get the username from the token
+                String role = jwtUtil.getRole(token);
+                Optional<User> byUsername = userRepository.findByEmail(username);
+                if (byUsername.isPresent()) {
+                    User user = byUsername.get();
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(user, null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                    authentication.setDetails(new WebAuthenticationDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
+
             }
 
+            // Proceed with the filter chain
+            filterChain.doFilter(request, response);
+        }catch (TokenExpiredException ex){
+            sendErrorResponse(response, "JWT token has expired. Please log in again.");
+        }catch (SignatureVerificationException ex){
+            sendErrorResponse(response, "Invalid JWT signature. Please log in again.");
+        }catch (Exception e){
+            sendErrorResponse(response, "Invalid or malformed JWT token.");
         }
+    }
 
-        // Proceed with the filter chain
-        filterChain.doFilter(request, response);
+    private void sendErrorResponse(HttpServletResponse response, String message) throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"status\":401,\"message\":\"" + message + "\"}");
     }
 }
