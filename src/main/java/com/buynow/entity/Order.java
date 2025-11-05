@@ -41,6 +41,7 @@
 package com.buynow.entity;
 
 import com.buynow.enums.OrderStatus;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -65,6 +66,7 @@ public class Order {
     private User user;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<OrderItem> orderItems;
 
     @Column(nullable = false)

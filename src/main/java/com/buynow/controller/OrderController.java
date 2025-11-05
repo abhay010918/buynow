@@ -1,6 +1,7 @@
 package com.buynow.controller;
 
 import com.buynow.entity.Order;
+import com.buynow.entity.OrderResponse;
 import com.buynow.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ public class OrderController {
     private final OrderService orderService;
 
     @PostMapping("/create")
-    public Order createOrder(@RequestParam Long userId) {
+    public OrderResponse createOrder(@RequestParam Long userId) {
         return orderService.createOrder(userId);
     }
 
