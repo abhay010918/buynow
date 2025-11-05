@@ -1,13 +1,14 @@
 package com.buynow.service;
 
 
+import com.buynow.dto.CartItemResponse;
 import com.buynow.entity.CartItem;
 
 import java.util.List;
 
 public interface CartService {
 
-    CartItem addToCart(Long userId, Long productId, int quantity);
+    CartItemResponse addToCart(Long userId, Long productId, int quantity);
 
     List<CartItem> getCartItem(Long userId);
 

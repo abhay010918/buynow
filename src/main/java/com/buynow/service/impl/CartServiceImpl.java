@@ -1,5 +1,6 @@
 package com.buynow.service.impl;
 
+import com.buynow.dto.CartItemResponse;
 import com.buynow.entity.CartItem;
 import com.buynow.entity.Product;
 import com.buynow.entity.User;
@@ -26,7 +27,7 @@ public class CartServiceImpl implements CartService {
     }
 
     @Override
-    public CartItem addToCart(Long userId, Long productId, int quantity) {
+    public CartItemResponse addToCart(Long userId, Long productId, int quantity) {
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("user not found"));
@@ -38,8 +39,19 @@ public class CartServiceImpl implements CartService {
         item.setUser(user);
         item.setProduct(product);
         item.setQuantity(quantity);
+        item.setPrice(product.getPrice());
 
-        return cartItemRepository.save(item);
+        cartItemRepository.save(item);
+
+        CartItemResponse response = CartItemResponse.builder()
+                .id(item.getId())
+                .userId(item.getId())
+                .productId(item.getProduct().getId())
+                .quantity(item.getQuantity())
+                .price(item.getPrice())
+                .build();
+
+        return response;
     }
 
     @Override

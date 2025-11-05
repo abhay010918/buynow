@@ -1,5 +1,6 @@
 package com.buynow.controller;
 
+import com.buynow.dto.CartItemResponse;
 import com.buynow.entity.CartItem;
 import com.buynow.service.CartService;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +16,9 @@ public class CartController {
     private final CartService cartService;
 
     @PostMapping("/add")
-    public CartItem addToCart(@RequestParam Long userId,
-                              @RequestParam Long productId,
-                              @RequestParam int quantity) {
+    public CartItemResponse addToCart(@RequestParam Long userId,
+                                      @RequestParam Long productId,
+                                      @RequestParam int quantity) {
         return cartService.addToCart(userId, productId, quantity);
     }
 
