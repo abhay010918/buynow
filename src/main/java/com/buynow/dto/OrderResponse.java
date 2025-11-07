@@ -1,6 +1,5 @@
-package com.buynow.entity;
+package com.buynow.dto;
 
-import com.buynow.dto.OrderItemResponse;
 import lombok.*;
 
 import java.util.List;

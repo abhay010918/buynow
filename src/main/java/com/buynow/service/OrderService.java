@@ -2,7 +2,7 @@ package com.buynow.service;
 
 
 import com.buynow.entity.Order;
-import com.buynow.entity.OrderResponse;
+import com.buynow.dto.OrderResponse;
 
 import java.util.List;
 

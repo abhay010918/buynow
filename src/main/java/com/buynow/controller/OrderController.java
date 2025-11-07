@@ -1,7 +1,7 @@
 package com.buynow.controller;
 
 import com.buynow.entity.Order;
-import com.buynow.entity.OrderResponse;
+import com.buynow.dto.OrderResponse;
 import com.buynow.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
