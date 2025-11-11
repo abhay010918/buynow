@@ -31,12 +31,13 @@ public class SecurityConfig {
                          * - Sign-up & login
                          * - Anyone can browse products or view a single product
                          */
-                        .requestMatchers("/user/**").permitAll()
+                        .requestMatchers("/user/**","/actuator/**").permitAll()
                         .requestMatchers(
                                 "/products",
                                 "/products/{id}",
                                 "/products/name/**",
                                 "/products/download/**"
+
                         ).permitAll()
 
                         /* ---------- USER USE-CASES ----------

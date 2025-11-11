@@ -10,10 +10,13 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/cart")
-@RequiredArgsConstructor
 public class CartController {
 
     private final CartService cartService;
+
+    public CartController(CartService cartService) {
+        this.cartService = cartService;
+    }
 
     @PostMapping("/add")
     public CartItemResponse addToCart(@RequestParam Long userId,

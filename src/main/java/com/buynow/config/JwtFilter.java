@@ -14,6 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -24,10 +25,8 @@ import java.util.Optional;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
-
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
-
 
     public JwtFilter(JwtUtil jwtUtil, UserRepository userRepository) {
         this.jwtUtil = jwtUtil;
@@ -40,36 +39,43 @@ public class JwtFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain) throws ServletException, IOException {
         try {
-
-
-            // Check if the Authorization header is present and starts with "Bearer "
             String authorization = request.getHeader("Authorization");
 
-
             if (authorization != null && authorization.startsWith("Bearer ")) {
-                String token = authorization.substring(7); // Remove the "Bearer " part
-                String username = jwtUtil.getUsername(token); // Get the username from the token
+                String token = authorization.substring(7);
+                String username = jwtUtil.getUsername(token);
                 String role = jwtUtil.getRole(token);
-                Optional<User> byUsername = userRepository.findByEmail(username);
-                if (byUsername.isPresent()) {
-                    User user = byUsername.get();
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(user, null,
-                                    List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-                    authentication.setDetails(new WebAuthenticationDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                }
 
+                Optional<User> userOpt = userRepository.findByEmail(username);
+                if (userOpt.isPresent() && jwtUtil.isTokenValid(token, userOpt.get())) {
+                    User user = userOpt.get();
+
+                    UsernamePasswordAuthenticationToken authentication =
+                            new UsernamePasswordAuthenticationToken(
+                                    user, null,
+                                    List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                            );
+
+                    authentication.setDetails(
+                            new WebAuthenticationDetailsSource().buildDetails(request)
+                    );
+
+                    if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    }
+                }
             }
 
-            // Proceed with the filter chain
             filterChain.doFilter(request, response);
-        }catch (TokenExpiredException ex){
+        } catch (TokenExpiredException ex) {
             sendErrorResponse(response, "JWT token has expired. Please log in again.");
-        }catch (SignatureVerificationException ex){
+            return;
+        } catch (SignatureVerificationException ex) {
             sendErrorResponse(response, "Invalid JWT signature. Please log in again.");
-        }catch (Exception e){
+            return;
+        } catch (Exception e) {
             sendErrorResponse(response, "Invalid or malformed JWT token.");
+            return;
         }
     }
 
